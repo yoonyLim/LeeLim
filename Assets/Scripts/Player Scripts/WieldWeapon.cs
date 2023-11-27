@@ -10,6 +10,7 @@ public class WieldWeapon : MonoBehaviour
     private GameObject weapon;
     public Transform attackPoint;
     private bool isInBattle = false;
+    private Camera mainCam;
     public void DrawWeapon()
     {
         weaponRenderer.enabled = true;
@@ -45,11 +46,17 @@ public class WieldWeapon : MonoBehaviour
     {
         weaponRenderer = gameObject.transform.GetComponentInChildren<SpriteRenderer>();
         weapon = gameObject.transform.GetChild(0).gameObject;
+        mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
     }
     private void Update()
     {
         if (isInBattle)
         {
+            Vector3 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 rotation = mousePos - gameObject.transform.position;
+            float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0, 0, rotZ);
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Attack();

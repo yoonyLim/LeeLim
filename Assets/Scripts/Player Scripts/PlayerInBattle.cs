@@ -2,22 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BattleTrigger : MonoBehaviour
+public class PlayerInBattle : MonoBehaviour
 {
-    private bool inBattle = false;
+    public bool inBattle = false;
     private GameObject battleManager;
     private GameObject weapon;
-    private float CalcDistanceFromPlayer()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Enemy");
-        Vector3 distance = player.transform.position - transform.position;
-        return distance.sqrMagnitude; // squared magnitude for fater calc rather than square rooted distance.magnitude
-    }
-
-    private IEnumerator stopForTurn()
-    {
-        yield return new WaitUntil(() => inBattle == false);
-    }
     private void Start()
     {
         battleManager = GameObject.Find("BattleManager");
@@ -32,12 +21,11 @@ public class BattleTrigger : MonoBehaviour
     }
     void Update()
     {
-        if (CalcDistanceFromPlayer() <= 20 && !inBattle)
+        if (inBattle)
         {
-            inBattle = true;
+            gameObject.GetComponent<PlayerMovement>().canMove = false;
             battleManager.GetComponent<ManageBattle>().StartBattle();
             weapon.GetComponent<WieldWeapon>().DrawWeapon();
-            StartCoroutine(stopForTurn());
         }
     }
 }

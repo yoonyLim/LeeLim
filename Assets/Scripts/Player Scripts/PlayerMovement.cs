@@ -18,12 +18,17 @@ public class PlayerMovement : MonoBehaviour
     {
         if (canMove)
         {
-            moveH = Input.GetAxis("Horizontal") * moveSpeed;
-            moveV = Input.GetAxis("Vertical") * moveSpeed;
+            moveH = Input.GetAxisRaw("Horizontal") * moveSpeed;
+            moveV = Input.GetAxisRaw("Vertical") * moveSpeed;
             rb.velocity = new Vector2(moveH, moveV);
 
             Vector2 direction = new Vector2(moveH, moveV);
             FindObjectOfType<PlayerAnimation>().setDirection(direction);
+        }
+        else
+        {
+            rb.velocity = Vector2.zero;
+            FindObjectOfType<PlayerAnimation>().setDirection(Vector2.zero);
         }
     }
 }
