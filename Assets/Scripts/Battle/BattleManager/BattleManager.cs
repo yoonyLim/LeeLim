@@ -4,16 +4,22 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
-    [SerializeField] private BattleTrigger battleTrigger;
+    // bool to check if each object is inited for battle
+    private bool isPlayerInited = false;
+
     private bool isBattleStarted = false;
     private GameObject alert;
     private float delayedTime = 0;
-    public float TurnDuration = 5.0f;
-    private int move = 0;
+    private float turnDuration;
+    private bool isTurnOver = false;
+    private bool isCoroutineCalled = false;
 
+    [SerializeField] private BattleTrigger battleTrigger;
     [SerializeField] private GameObject player;
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private GameObject arrowUI;
+    [SerializeField] private GameObject globalTurnDuration;
+    [SerializeField] private GameObject battleUIController;
 
     public void InitBattle()
     {
@@ -22,10 +28,17 @@ public class BattleManager : MonoBehaviour
         arrowUI.GetComponent<ArrowUIInBattle>().InitBattle();
     }
 
+    public void TurnOver()
+    {
+        isTurnOver = true;
+        battleUIController.GetComponent<BattleUIController>().TurnOver();
+    }
+
     private void Start()
     {
         alert = GameObject.FindGameObjectWithTag("BattleCanvas");
         battleTrigger.OnPlayerEnterTrigger += BttleTrigger_OnPlayerEnterTrigger;
+        turnDuration = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
     }
 
     private void BttleTrigger_OnPlayerEnterTrigger(object sender, System.EventArgs e)
@@ -34,35 +47,36 @@ public class BattleManager : MonoBehaviour
         Instantiate(enemyPrefab, new Vector2(Random.Range(-4.0f, -2.0f), Random.Range(1.0f, 2.0f)), Quaternion.identity);
     }
 
+    private IEnumerator WaitTurn()
+    {
+        yield return new WaitUntil(() => isTurnOver);
+        // reassign for next turn
+        isTurnOver = false;
+        isCoroutineCalled = false;
+        delayedTime = 0;
+        arrowUI.GetComponent<ArrowUIInBattle>().TurnOver();
+    }
+
     private void Update()
     {
         if (isBattleStarted)
         {
-            player.GetComponent<PlayerInBattle>().InitBattle();
+            if (!isPlayerInited)
+            {
+                player.GetComponent<PlayerInBattle>().InitBattle();
+                isPlayerInited = true;
+            }
 
             delayedTime += Time.deltaTime;
-            if (Input.GetKeyDown(KeyCode.Space))
+
+            if (delayedTime >= turnDuration)
             {
-                move = 1; // 1 for basic attack
-            } 
-            else if (Input.GetMouseButtonDown(0))
-            {
-                move = 2; // 2 for movement
-            }
-            if (delayedTime >= TurnDuration)
-            {
-                delayedTime = 0;
-                if (move == 1)
+                if (!isCoroutineCalled)
                 {
-                    Debug.Log("Attack");
-                } 
-                else if (move == 2)
-                {
-                    Debug.Log("Move");
-                }
-                else
-                {
-                    Debug.Log("nothing happened...");
+                    player.GetComponent<PlayerInBattle>().TakeTrun();
+                    arrowUI.GetComponent<ArrowUIInBattle>().WaitTurn();
+                    isCoroutineCalled = true;
+                    StartCoroutine(WaitTurn());
                 }
             }
         }

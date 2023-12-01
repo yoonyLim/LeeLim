@@ -21,10 +21,22 @@ public class ArrowUIInBattle : MonoBehaviour
         isResizable = true;
     }
 
-    void EndBattle()
+    public void EndBattle()
     {
         arrowRenderer.enabled = false;
         isInBattle = false;
+    }
+
+    public void WaitTurn()
+    {
+        arrowRenderer.enabled = false;
+        isResizable = false;
+    }
+
+    public void TurnOver()
+    {
+        arrowRenderer.enabled = true;
+        isResizable = true;
     }
 
     void Start()

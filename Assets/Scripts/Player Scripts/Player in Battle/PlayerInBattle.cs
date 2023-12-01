@@ -4,11 +4,18 @@ using UnityEngine;
 
 public class PlayerInBattle : MonoBehaviour
 {
-    private bool inBattle = false;
-    private Vector3 coordsToMoveTo;
+    // bool to check if each object is inited for battle
+    private bool areChildrenInited = false;
 
-    [SerializeField] private GameObject battleManager;
+    private bool inBattle = false;
+    private Vector3 destinationCoords;
+    private Vector3 originCoords;
+    private bool shouldMoveNextTurn = false;
+    private bool isMyTurn = false;
+    private bool hasMoved = false;
+
     [SerializeField] private GameObject weapon;
+    [SerializeField] private GameObject battleManager;
 
     public void InitBattle()
     {
@@ -20,19 +27,55 @@ public class PlayerInBattle : MonoBehaviour
         inBattle = false;
     }
 
+    // used by ArrowUI
     public void SetMovementCoords(Vector3 coords)
     {
-        coordsToMoveTo = coords;
-        Debug.Log(coordsToMoveTo);
+        destinationCoords = coords;
+        shouldMoveNextTurn = true;
+        Debug.Log(destinationCoords);
+    }
+
+    private void MoveToTarget()
+    {
+        transform.position = Vector3.MoveTowards(transform.position, destinationCoords, 2.0f * Time.deltaTime);
+    }
+
+    public void TakeTrun()
+    {
+        isMyTurn = true;
+        originCoords = transform.position;
+        StartCoroutine(WaitUntilMoved());
+    }
+
+    private IEnumerator WaitUntilMoved()
+    {
+        yield return new WaitUntil(() => shouldMoveNextTurn && hasMoved);
+        hasMoved = false;
+        isMyTurn = false;
+        shouldMoveNextTurn = false;
+        battleManager.GetComponent<BattleManager>().TurnOver();
     }
 
     void Update()
     {
         if (inBattle)
         {
-            gameObject.GetComponent<PlayerMovement>().canMove = false;
-            battleManager.GetComponent<BattleManager>().InitBattle();
-            weapon.GetComponent<WieldWeapon>().InitBattle();
+            if (!areChildrenInited)
+            {
+                gameObject.GetComponent<PlayerMovement>().InitBattle();
+                weapon.GetComponent<WieldWeapon>().InitBattle();
+                areChildrenInited = true;
+            }
+
+            if (isMyTurn)
+            {
+                MoveToTarget();
+
+                if (transform.position == destinationCoords)
+                {
+                    hasMoved = true;
+                }
+            }
         }
     }
 }

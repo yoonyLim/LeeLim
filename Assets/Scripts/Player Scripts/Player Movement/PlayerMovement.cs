@@ -4,10 +4,15 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public bool canMove = true;
+    private bool canMove = true;
     private Rigidbody2D rb;
     private float moveH, moveV;
     [SerializeField] private float moveSpeed = 2.0f;
+
+    public void InitBattle()
+    {
+        canMove = false;
+    }
 
     private void Awake()
     {
@@ -27,8 +32,15 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            rb.velocity = Vector2.zero;
-            FindObjectOfType<PlayerAnimation>().setDirection(Vector2.zero);
+            if (rb.velocity.magnitude < 0.1f)
+            {
+                rb.velocity = Vector2.zero;
+                FindObjectOfType<PlayerAnimation>().setDirection(Vector2.zero);
+            }
+            else
+            {
+                rb.velocity /= 1.05f;
+            }
         }
     }
 }
