@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ManageBattle : MonoBehaviour
+public class BattleManager : MonoBehaviour
 {
     [SerializeField] private BattleTrigger battleTrigger;
     private bool isBattleStarted = false;
@@ -10,23 +10,27 @@ public class ManageBattle : MonoBehaviour
     private float delayedTime = 0;
     public float TurnDuration = 5.0f;
     private int move = 0;
-    private GameObject player;
-    [SerializeField] private GameObject enemyPrefab;
 
-    public void StartBattle()
+    [SerializeField] private GameObject player;
+    [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private GameObject arrowUI;
+
+    public void InitBattle()
     {
         isBattleStarted = true;
-        alert.GetComponent<ControlBattleUI>().StartBattle();
+        alert.GetComponent<BattleUIController>().InitBattle();
+        arrowUI.GetComponent<ArrowUIInBattle>().InitBattle();
     }
+
     private void Start()
     {
         alert = GameObject.FindGameObjectWithTag("BattleCanvas");
-        player = GameObject.FindGameObjectWithTag("Player");
         battleTrigger.OnPlayerEnterTrigger += BttleTrigger_OnPlayerEnterTrigger;
     }
+
     private void BttleTrigger_OnPlayerEnterTrigger(object sender, System.EventArgs e)
     {
-        StartBattle();
+        InitBattle();
         Instantiate(enemyPrefab, new Vector2(Random.Range(-4.0f, -2.0f), Random.Range(1.0f, 2.0f)), Quaternion.identity);
     }
 
@@ -34,7 +38,7 @@ public class ManageBattle : MonoBehaviour
     {
         if (isBattleStarted)
         {
-            player.GetComponent<PlayerInBattle>().inBattle = true;
+            player.GetComponent<PlayerInBattle>().InitBattle();
 
             delayedTime += Time.deltaTime;
             if (Input.GetKeyDown(KeyCode.Space))

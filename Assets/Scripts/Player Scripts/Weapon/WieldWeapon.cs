@@ -7,16 +7,18 @@ public class WieldWeapon : MonoBehaviour
     public float attachRange = 0.5f;
     public LayerMask enemyLayer;
     private SpriteRenderer weaponRenderer;
-    private GameObject weapon;
     public Transform attackPoint;
     private bool isInBattle = false;
     private Camera mainCam;
-    public void DrawWeapon()
+
+    [SerializeField] private GameObject weapon;
+
+    public void InitBattle()
     {
         weaponRenderer.enabled = true;
         isInBattle = true;
     }
-    public void PutWeapon()
+    public void EndBattle()
     {
         weaponRenderer.enabled = false;
     }
@@ -44,8 +46,8 @@ public class WieldWeapon : MonoBehaviour
     }
     private void Start()
     {
-        weaponRenderer = gameObject.transform.GetComponentInChildren<SpriteRenderer>();
-        weapon = gameObject.transform.GetChild(0).gameObject;
+        weaponRenderer = weapon.GetComponent<SpriteRenderer>();
+        weaponRenderer.enabled = false;
         mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
     }
     private void Update()

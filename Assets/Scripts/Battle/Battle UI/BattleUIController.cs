@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ControlBattleUI : MonoBehaviour
+public class BattleUIController : MonoBehaviour
 {
     private bool isBattleStarted = false;
     private bool isTriggerOver = false;
     private CanvasGroup group;
     private GameObject childAlert;
     private CanvasGroup childAlertCvsGrp;
-    public void StartBattle()
+    public void InitBattle()
     {
         isBattleStarted = true;
     }
