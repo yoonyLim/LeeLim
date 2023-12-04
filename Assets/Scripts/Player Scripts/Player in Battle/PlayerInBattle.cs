@@ -6,15 +6,19 @@ public class PlayerInBattle : MonoBehaviour
 {
     // bool to check if each object is inited for battle
     private bool areChildrenInited = false;
-
     private bool inBattle = false;
-    private Vector3 destinationCoords;
-    private Vector3 originCoords;
+    private Vector3 moveDestinationCoords;
+    private Vector3 attackTargetCoords;
     private bool shouldMoveNextTurn = false;
+    private bool shouldAttackNextTurn = false;
     private bool isMyTurn = false;
-    private bool hasMoved = false;
+    private float strength = 4, delay = 0.2f;
+
+    private Rigidbody2D rb;
+    private Animator anim;
 
     [SerializeField] private GameObject weapon;
+    [SerializeField] private GameObject playerSprite;
     [SerializeField] private GameObject battleManager;
 
     public void InitBattle()
@@ -22,38 +26,68 @@ public class PlayerInBattle : MonoBehaviour
         inBattle = true;
     }
 
-    public void EndBattle()
+    public void BattleOver()
     {
         inBattle = false;
+        gameObject.GetComponent<PlayerMovement>().BattleOver();
+        weapon.GetComponent<WieldWeapon>().BattleOver();
     }
 
-    // used by ArrowUI
+    // accessed by ArrowUI
     public void SetMovementCoords(Vector3 coords)
     {
-        destinationCoords = coords;
+        moveDestinationCoords = coords;
         shouldMoveNextTurn = true;
-        Debug.Log(destinationCoords);
+    }
+
+    public void SetWeaponDirCoords(Vector3 aimCoords)
+    {
+        attackTargetCoords = aimCoords;
+        shouldAttackNextTurn = true;
     }
 
     private void MoveToTarget()
     {
-        transform.position = Vector3.MoveTowards(transform.position, destinationCoords, 2.0f * Time.deltaTime);
+        transform.position = Vector3.MoveTowards(transform.position, moveDestinationCoords, 5.0f * Time.deltaTime);
     }
 
-    public void TakeTrun()
+    // accessed by Battle Manager
+    public void PlayTurn()
     {
         isMyTurn = true;
-        originCoords = transform.position;
-        StartCoroutine(WaitUntilMoved());
+        if (shouldMoveNextTurn)
+        {
+            playerSprite.GetComponent<PlayerAnimation>().setDirection(new Vector2(moveDestinationCoords.x - transform.position.x, moveDestinationCoords.y - transform.position.y));
+        }
+    }
+    public void TakeDamage(GameObject sender)
+    {
+        anim.Play("Player Got Hit");
+        Vector2 direction = (transform.position - sender.transform.position).normalized;
+        rb.AddForce(direction * strength, ForceMode2D.Impulse);
+        StartCoroutine(KnockBacked());
+        EndTurn();
     }
 
-    private IEnumerator WaitUntilMoved()
+    private IEnumerator KnockBacked()
     {
-        yield return new WaitUntil(() => shouldMoveNextTurn && hasMoved);
-        hasMoved = false;
+        yield return new WaitForSeconds(delay);
+        rb.velocity = Vector3.zero;
+        anim.Play("Static");
+    }
+
+    private void EndTurn()
+    {
         isMyTurn = false;
         shouldMoveNextTurn = false;
-        battleManager.GetComponent<BattleManager>().TurnOver();
+        shouldAttackNextTurn = false;
+        battleManager.GetComponent<BattleManager>().PlayerTurnOver();
+    }
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        anim = playerSprite.GetComponent<Animator>();
     }
 
     void Update()
@@ -69,11 +103,28 @@ public class PlayerInBattle : MonoBehaviour
 
             if (isMyTurn)
             {
-                MoveToTarget();
-
-                if (transform.position == destinationCoords)
+                if (shouldMoveNextTurn)
                 {
-                    hasMoved = true;
+                    MoveToTarget();
+
+                    if (transform.position == moveDestinationCoords)
+                    {
+                        if (shouldAttackNextTurn)
+                        {
+                            weapon.GetComponent<WieldWeapon>().Attack(attackTargetCoords);
+                        }
+                        playerSprite.GetComponent<PlayerAnimation>().setDirection(Vector2.zero);
+                        EndTurn();
+                    }
+                }
+                else if (shouldAttackNextTurn)
+                {
+                    weapon.GetComponent<WieldWeapon>().Attack(attackTargetCoords);
+                    EndTurn();
+                }
+                else
+                {
+                    EndTurn();
                 }
             }
         }

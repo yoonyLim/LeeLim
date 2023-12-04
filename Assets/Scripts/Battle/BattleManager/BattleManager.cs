@@ -4,34 +4,47 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
-    // bool to check if each object is inited for battle
-    private bool isPlayerInited = false;
-
     private bool isBattleStarted = false;
     private GameObject alert;
     private float delayedTime = 0;
     private float turnDuration;
-    private bool isTurnOver = false;
+    private bool isPlayerTurnOver = false;
+    private bool isEnemyTurnOver = false;
     private bool isCoroutineCalled = false;
+    private GameObject enemyInstance;
 
     [SerializeField] private BattleTrigger battleTrigger;
     [SerializeField] private GameObject player;
-    [SerializeField] private GameObject enemyPrefab;
-    [SerializeField] private GameObject arrowUI;
+    [SerializeField] private GameObject enemy;
+    [SerializeField] private GameObject playerBattleUI;
     [SerializeField] private GameObject globalTurnDuration;
     [SerializeField] private GameObject battleUIController;
 
     public void InitBattle()
     {
         isBattleStarted = true;
+        player.GetComponent<PlayerInBattle>().InitBattle();
         alert.GetComponent<BattleUIController>().InitBattle();
-        arrowUI.GetComponent<ArrowUIInBattle>().InitBattle();
+        playerBattleUI.GetComponent<PlayerBattleUI>().InitBattle();
     }
 
-    public void TurnOver()
+    public void PlayerTurnOver()
     {
-        isTurnOver = true;
-        battleUIController.GetComponent<BattleUIController>().TurnOver();
+        isPlayerTurnOver = true;
+    }
+
+    public void EnemyTurnOver()
+    {
+        isEnemyTurnOver = true;
+    }
+
+    public void BattleOver()
+    {
+        isBattleStarted = false;
+        StopAllCoroutines();
+        battleUIController.GetComponent<BattleUIController>().BattleOver();
+        player.GetComponent<PlayerInBattle>().BattleOver();
+        playerBattleUI.GetComponent<PlayerBattleUI>().BattleOver();
     }
 
     private void Start()
@@ -44,38 +57,35 @@ public class BattleManager : MonoBehaviour
     private void BttleTrigger_OnPlayerEnterTrigger(object sender, System.EventArgs e)
     {
         InitBattle();
-        Instantiate(enemyPrefab, new Vector2(Random.Range(-4.0f, -2.0f), Random.Range(1.0f, 2.0f)), Quaternion.identity);
+        enemyInstance = Instantiate(enemy, new Vector2(Random.Range(-4.0f, -2.0f), Random.Range(1.0f, 2.0f)), Quaternion.identity);
     }
 
     private IEnumerator WaitTurn()
     {
-        yield return new WaitUntil(() => isTurnOver);
+        yield return new WaitUntil(() => isPlayerTurnOver && isEnemyTurnOver);
         // reassign for next turn
-        isTurnOver = false;
+        isPlayerTurnOver = false;
+        isEnemyTurnOver = false;
         isCoroutineCalled = false;
         delayedTime = 0;
-        arrowUI.GetComponent<ArrowUIInBattle>().TurnOver();
+        battleUIController.GetComponent<BattleUIController>().TurnOver();
+        playerBattleUI.GetComponent<PlayerBattleUI>().TurnOver();
     }
 
     private void Update()
     {
         if (isBattleStarted)
         {
-            if (!isPlayerInited)
-            {
-                player.GetComponent<PlayerInBattle>().InitBattle();
-                isPlayerInited = true;
-            }
-
             delayedTime += Time.deltaTime;
 
             if (delayedTime >= turnDuration)
             {
                 if (!isCoroutineCalled)
                 {
-                    player.GetComponent<PlayerInBattle>().TakeTrun();
-                    arrowUI.GetComponent<ArrowUIInBattle>().WaitTurn();
                     isCoroutineCalled = true;
+                    player.GetComponent<PlayerInBattle>().PlayTurn();
+                    enemyInstance.GetComponent<EnemyInBattle>().PlayTurn();
+                    playerBattleUI.GetComponent<PlayerBattleUI>().WaitTurn();
                     StartCoroutine(WaitTurn());
                 }
             }

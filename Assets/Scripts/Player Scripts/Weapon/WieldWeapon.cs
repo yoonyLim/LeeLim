@@ -1,67 +1,110 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class WieldWeapon : MonoBehaviour
 {
-    public float attachRange = 0.5f;
     public LayerMask enemyLayer;
-    private SpriteRenderer weaponRenderer;
     public Transform attackPoint;
     private bool isInBattle = false;
+    private bool shouldAttack = false;
+    private int curWeaponIndex = 0;
     private Camera mainCam;
+    [SerializeField] private float arrowSpeed;
 
-    [SerializeField] private GameObject weapon;
+    [SerializeField] private float attackRange;
+    [SerializeField] private GameObject[] weapons;
+    [SerializeField] private GameObject attackArea;
+    [SerializeField] private GameObject battleUI;
+    [SerializeField] private GameObject arrow;
 
     public void InitBattle()
     {
-        weaponRenderer.enabled = true;
+        weapons[curWeaponIndex].GetComponent<SpriteRenderer>().enabled = true;
         isInBattle = true;
     }
-    public void EndBattle()
+    public void BattleOver()
     {
-        weaponRenderer.enabled = false;
+        weapons[curWeaponIndex].GetComponent<SpriteRenderer>().enabled = false;
     }
-    private void Attack()
+
+    private void ChangeWeapon(int selectedWeapon)
     {
+        curWeaponIndex = selectedWeapon;
+        weapons[curWeaponIndex].GetComponent<SpriteRenderer>().enabled = true;
+
+        for (int i = 0; i < weapons.Length; i++)
+        {
+            if (i != curWeaponIndex)
+            {
+                weapons[i].GetComponent<SpriteRenderer>().enabled = false;
+            }
+        }
+
+        battleUI.GetComponent<PlayerBattleUI>().changeWeapon(curWeaponIndex);
+    }
+    public void Attack(Vector3 aimCoords)
+    {
+        shouldAttack = true;
+
+        transform.rotation = Quaternion.Euler(0, 0, aimCoords.z);
         // play animation
-        weapon.GetComponent<Animator>().SetTrigger("Attack");
+        weapons[curWeaponIndex].GetComponent<Animator>().SetTrigger("Attack");
 
-        // create hitbox overlay
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attachRange, enemyLayer);
-
-        foreach(Collider2D enemy in hitEnemies)
+        if (curWeaponIndex == 0)
         {
-            Debug.Log("Hit enemy: " + enemy.name);
+            // create hitbox overlay
+            Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayer);
+
+            foreach (Collider2D enemy in hitEnemies)
+            {
+                if (enemy.tag == "Enemy")
+                {
+                    enemy.GetComponent<EnemyInBattle>().TakeDamage(gameObject, 0.5f);
+                }
+            }
         }
-    }
-    private void OnDrawGizmosSelected()
-    {
-        if (attackPoint == null)
+        else if (curWeaponIndex == 1)
         {
-            return;
+            GameObject arrowInstance = Instantiate(arrow, transform.position, Quaternion.identity);
+
+            Vector3 rotation = aimCoords - transform.position;
+            float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+            arrowInstance.transform.rotation = Quaternion.Euler(0, 0, rotZ);
+
+            Vector2 direction = new Vector2(rotation.x, rotation.y).normalized;
+
+            arrowInstance.GetComponent<Rigidbody2D>().velocity = direction * arrowSpeed;
         }
 
-        Gizmos.DrawWireSphere(attackPoint.position, attachRange);
+        shouldAttack = false;
     }
     private void Start()
     {
-        weaponRenderer = weapon.GetComponent<SpriteRenderer>();
-        weaponRenderer.enabled = false;
+        foreach (GameObject weapon in weapons)
+        {
+            weapon.GetComponent<SpriteRenderer>().enabled = false;
+        }
         mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
     }
     private void Update()
     {
-        if (isInBattle)
+        if (isInBattle && !shouldAttack)
         {
             Vector3 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
             Vector3 rotation = mousePos - gameObject.transform.position;
             float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0, 0, rotZ);
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKey(KeyCode.Alpha1))
             {
-                Attack();
+                ChangeWeapon(0);
+            }
+            else if (Input.GetKey(KeyCode.Alpha2))
+            {
+                ChangeWeapon(1);
             }
         }
     }

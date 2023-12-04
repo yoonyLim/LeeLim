@@ -8,6 +8,9 @@ TagManager:
   - Enemy
   - BattleCanvas
   - Weapon
+  - BattleManager
+  - Sword
+  - Bow
   layers:
   - Default
   - TransparentFX

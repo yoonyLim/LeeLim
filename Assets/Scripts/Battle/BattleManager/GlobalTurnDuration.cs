@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GlobalTurnDuration : MonoBehaviour
 {
-    private const float turnDuration = 5.0f;
+    private const float turnDuration = 3.0f;
 
     public float getTurnDuration()
     {

@@ -14,6 +14,11 @@ public class PlayerMovement : MonoBehaviour
         canMove = false;
     }
 
+    public void BattleOver()
+    {
+        canMove = true;
+    }
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -30,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
             Vector2 direction = new Vector2(moveH, moveV);
             FindObjectOfType<PlayerAnimation>().setDirection(direction);
         }
-        else
+        else if (rb.velocity.magnitude != 0)
         {
             if (rb.velocity.magnitude < 0.1f)
             {

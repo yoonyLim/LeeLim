@@ -21,9 +21,16 @@ public class BattleUIController : MonoBehaviour
         isInBattle = true;
     }
 
+    // accessed by Battle Manager
     public void TurnOver()
     {
         isTurnOver = true;
+    }
+
+    public void BattleOver()
+    {
+        gameObject.SetActive(false);
+        childAlert.SetActive(false);
     }
     private IEnumerator WaitTurn()
     {
