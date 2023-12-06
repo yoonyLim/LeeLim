@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleUIController : MonoBehaviour
 {
@@ -16,6 +17,12 @@ public class BattleUIController : MonoBehaviour
     [SerializeField] private GameObject childAlert;
     [SerializeField] private TextMeshProUGUI battleTimer;
     [SerializeField] private GameObject globalTurnDuration;
+    [SerializeField] private Sprite swordEnabled;
+    [SerializeField] private Sprite swordDisabled;
+    [SerializeField] private Sprite bowEnabled;
+    [SerializeField] private Sprite bowDisabled;
+    [SerializeField] private GameObject swordMenu;
+    [SerializeField] private GameObject bowMenu;
     public void InitBattle()
     {
         isInBattle = true;
@@ -59,7 +66,7 @@ public class BattleUIController : MonoBehaviour
             {
                 group.alpha += Time.deltaTime;
                 childAlertCvsGrp.alpha += Time.deltaTime;
-            } 
+            }
             else
             {
                 isTriggerOver = true;
@@ -81,6 +88,19 @@ public class BattleUIController : MonoBehaviour
                     isCoroutineCalled = true;
                     StartCoroutine(WaitTurn());
                 }
+            }
+
+            // weapon menu change
+            if (Input.GetKey(KeyCode.Alpha1))
+            {
+                swordMenu.GetComponent<Image>().sprite = swordEnabled;
+                bowMenu.GetComponent<Image>().sprite = bowDisabled;
+            }
+
+            if (Input.GetKey(KeyCode.Alpha2))
+            {
+                bowMenu.GetComponent<Image>().sprite = bowEnabled;
+                swordMenu.GetComponent<Image>().sprite = swordDisabled;
             }
         }
 

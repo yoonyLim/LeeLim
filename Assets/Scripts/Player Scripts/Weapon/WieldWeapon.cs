@@ -78,8 +78,6 @@ public class WieldWeapon : MonoBehaviour
 
             arrowInstance.GetComponent<Rigidbody2D>().velocity = direction * arrowSpeed;
         }
-
-        shouldAttack = false;
     }
     private void Start()
     {
@@ -91,12 +89,22 @@ public class WieldWeapon : MonoBehaviour
     }
     private void Update()
     {
-        if (isInBattle && !shouldAttack)
+        if (isInBattle)
         {
-            Vector3 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
-            Vector3 rotation = mousePos - gameObject.transform.position;
-            float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, 0, rotZ);
+            if (!shouldAttack)
+            {
+                Vector3 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
+                Vector3 rotation = mousePos - gameObject.transform.position;
+                float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+                transform.rotation = Quaternion.Euler(0, 0, rotZ);
+            } 
+            else
+            {
+                if (weapons[curWeaponIndex].GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                {
+                    shouldAttack = false;
+                }
+            }
 
             if (Input.GetKey(KeyCode.Alpha1))
             {

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInBattle : MonoBehaviour
 {
@@ -17,9 +19,16 @@ public class PlayerInBattle : MonoBehaviour
     private Rigidbody2D rb;
     private Animator anim;
 
+    [SerializeField] private int health = 100;
     [SerializeField] private GameObject weapon;
     [SerializeField] private GameObject playerSprite;
     [SerializeField] private GameObject battleManager;
+    [SerializeField] private GameObject healthBar;
+    private Slider healthBarSlider;
+    [SerializeField] private TextMeshProUGUI healthBarText;
+    [SerializeField] private TextMeshProUGUI healthPotionNum;
+    [SerializeField] private GameObject healthPotionMenu;
+    [SerializeField] private Sprite healthPotionEmpty;
 
     public void InitBattle()
     {
@@ -62,6 +71,15 @@ public class PlayerInBattle : MonoBehaviour
     }
     public void TakeDamage(GameObject sender)
     {
+        health -= 20;
+        healthBarSlider.value = health;
+        healthBarText.text = "HP: " + health.ToString() + "%";
+        
+        if (health <= 0)
+        {
+            Debug.Log("player dead");
+        }
+
         anim.Play("Player Got Hit");
         Vector2 direction = (transform.position - sender.transform.position).normalized;
         rb.AddForce(direction * strength, ForceMode2D.Impulse);
@@ -88,6 +106,7 @@ public class PlayerInBattle : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = playerSprite.GetComponent<Animator>();
+        healthBarSlider = healthBar.GetComponent<Slider>();
     }
 
     void Update()
@@ -125,6 +144,22 @@ public class PlayerInBattle : MonoBehaviour
                 else
                 {
                     EndTurn();
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (int.Parse(healthPotionNum.text) != 0 && health != 100)
+                {
+                    health = 100;
+                    healthPotionNum.text = (int.Parse(healthPotionNum.text) - 1).ToString();
+                    healthBarSlider.value = health;
+                    healthBarText.text = "HP: " + health.ToString() + "%";
+
+                    if (healthPotionNum.text == "0")
+                    {
+                        healthPotionMenu.GetComponent<Image>().sprite = healthPotionEmpty;
+                    }
                 }
             }
         }

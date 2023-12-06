@@ -433,7 +433,7 @@ MonoBehaviour:
     m_Bits: 64
   attackPoint: {fileID: 2208167957217973435}
   arrowSpeed: 3
-  attackRange: 1
+  attackRange: 1.5
   weapons:
   - {fileID: 838960038080439118}
   - {fileID: 122986702012881969}
