@@ -5,7 +5,6 @@ using UnityEngine;
 public class BattleManager : MonoBehaviour
 {
     private bool isBattleStarted = false;
-    private GameObject alert;
     private float delayedTime = 0;
     private float turnDuration;
     private bool isPlayerTurnOver = false;
@@ -23,9 +22,11 @@ public class BattleManager : MonoBehaviour
     public void InitBattle()
     {
         isBattleStarted = true;
+        delayedTime = 0;
+        battleUIController.GetComponent<BattleUIController>().InitBattle();
         player.GetComponent<PlayerInBattle>().InitBattle();
-        alert.GetComponent<BattleUIController>().InitBattle();
         playerBattleUI.GetComponent<PlayerBattleUI>().InitBattle();
+        turnDuration = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
     }
 
     public void PlayerTurnOver()
@@ -41,6 +42,9 @@ public class BattleManager : MonoBehaviour
     public void BattleOver()
     {
         isBattleStarted = false;
+        isPlayerTurnOver = false;
+        isEnemyTurnOver = false;
+        isCoroutineCalled = false;
         StopAllCoroutines();
         battleUIController.GetComponent<BattleUIController>().BattleOver();
         player.GetComponent<PlayerInBattle>().BattleOver();
@@ -49,9 +53,7 @@ public class BattleManager : MonoBehaviour
 
     private void Start()
     {
-        alert = GameObject.FindGameObjectWithTag("BattleCanvas");
         battleTrigger.OnPlayerEnterTrigger += BttleTrigger_OnPlayerEnterTrigger;
-        turnDuration = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
     }
 
     private void BttleTrigger_OnPlayerEnterTrigger(object sender, System.EventArgs e)

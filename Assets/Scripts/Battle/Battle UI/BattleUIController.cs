@@ -23,9 +23,13 @@ public class BattleUIController : MonoBehaviour
     [SerializeField] private Sprite bowDisabled;
     [SerializeField] private GameObject swordMenu;
     [SerializeField] private GameObject bowMenu;
+
     public void InitBattle()
     {
         isInBattle = true;
+        gameObject.SetActive(true);
+        childAlert.SetActive(true);
+        turnDuration = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
     }
 
     // accessed by Battle Manager
@@ -36,6 +40,8 @@ public class BattleUIController : MonoBehaviour
 
     public void BattleOver()
     {
+        isInBattle = false;
+        group.alpha = 0;
         gameObject.SetActive(false);
         childAlert.SetActive(false);
     }
@@ -49,7 +55,6 @@ public class BattleUIController : MonoBehaviour
     }
     private void Start()
     {
-        turnDuration = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
         childAlert.SetActive(false);
         childAlertCvsGrp = childAlert.GetComponent<CanvasGroup>();
         group = GetComponent<CanvasGroup>();
@@ -60,8 +65,6 @@ public class BattleUIController : MonoBehaviour
         if (isInBattle)
         {
             // battle alert fade in
-            gameObject.SetActive(true);
-            childAlert.SetActive(true);
             if (group.alpha < 1)
             {
                 group.alpha += Time.deltaTime;

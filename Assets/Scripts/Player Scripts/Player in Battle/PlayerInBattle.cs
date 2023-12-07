@@ -37,6 +37,7 @@ public class PlayerInBattle : MonoBehaviour
 
     public void BattleOver()
     {
+        areChildrenInited = false;
         inBattle = false;
         gameObject.GetComponent<PlayerMovement>().BattleOver();
         weapon.GetComponent<WieldWeapon>().BattleOver();
@@ -99,7 +100,16 @@ public class PlayerInBattle : MonoBehaviour
         isMyTurn = false;
         shouldMoveNextTurn = false;
         shouldAttackNextTurn = false;
+        anim.Play("Static");
         battleManager.GetComponent<BattleManager>().PlayerTurnOver();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Collision")
+        {
+            EndTurn();
+        }
     }
 
     private void Start()

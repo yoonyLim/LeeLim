@@ -43,6 +43,7 @@ public class EnemyInBattle : MonoBehaviour
         rb.velocity = Vector3.zero;
         spriteAnim.Play("Idle");
     }
+
     private void Die()
     {
         isMyTurn = false;
@@ -82,11 +83,14 @@ public class EnemyInBattle : MonoBehaviour
         }
         transform.position = Vector3.MoveTowards(transform.position, destinationCoords, speed * Time.deltaTime);
     }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.TryGetComponent<PlayerInBattle>(out PlayerInBattle player))
         {
             player.TakeDamage(gameObject);
+            spriteAnim.Play("Idle");
+            EndTurn();
         }
     }
 

@@ -91,7 +91,7 @@ public class PlayerBattleUI : MonoBehaviour
                     movePath.transform.rotation = Quaternion.Euler(0, 0, rotZ);
 
                     curDistance = Vector2.Distance(mousePos, movePath.transform.position);
-
+                                        
                     if (curDistance > maxDistance)
                     {
                         movePath.transform.localScale = new Vector3(7.0f, movePath.transform.localScale.y, movePath.transform.localScale.z);

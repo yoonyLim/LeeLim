@@ -11,11 +11,12 @@ TagManager:
   - BattleManager
   - Sword
   - Bow
+  - Collision
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Collision
   - Water
   - UI
   - Enemies
