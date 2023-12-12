@@ -49,7 +49,9 @@ public class WieldWeapon : MonoBehaviour
     {
         shouldAttack = true;
 
-        transform.rotation = Quaternion.Euler(0, 0, aimCoords.z);
+        Vector3 rotation = aimCoords - transform.position;
+        float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, rotZ);
         // play animation
         weapons[curWeaponIndex].GetComponent<Animator>().SetTrigger("Attack");
 
@@ -70,13 +72,19 @@ public class WieldWeapon : MonoBehaviour
         {
             GameObject arrowInstance = Instantiate(arrow, transform.position, Quaternion.identity);
 
-            Vector3 rotation = aimCoords - transform.position;
-            float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
             arrowInstance.transform.rotation = Quaternion.Euler(0, 0, rotZ);
 
             Vector2 direction = new Vector2(rotation.x, rotation.y).normalized;
 
             arrowInstance.GetComponent<Rigidbody2D>().velocity = direction * arrowSpeed;
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (attackPoint != null)
+        {
+            Gizmos.DrawWireSphere(attackPoint.position, attackRange);
         }
     }
     private void Start()

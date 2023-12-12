@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Arrow : MonoBehaviour
+public class Bone : MonoBehaviour
 {
     public LayerMask enemyLayer;
     [SerializeField] private float rangeWidth;
@@ -24,9 +24,9 @@ public class Arrow : MonoBehaviour
         foreach (Collider2D collision in hitEnemies)
         {
             Debug.Log(collision);
-            if (collision.tag == "Enemy")
+            if (collision.tag == "Player")
             {
-                collision.GetComponent<EnemyInBattle>().TakeDamage(gameObject, 0.34f);
+                collision.GetComponent<PlayerInBattle>().TakeDamage(gameObject);
                 Destroy(gameObject);
             } else if (collision.tag == "Collision")
             {

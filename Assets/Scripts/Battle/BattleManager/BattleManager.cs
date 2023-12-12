@@ -15,6 +15,7 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private BattleTrigger battleTrigger;
     [SerializeField] private GameObject player;
     [SerializeField] private GameObject enemy;
+    [SerializeField] private GameObject skeleton;
     [SerializeField] private GameObject playerBattleUI;
     [SerializeField] private GameObject globalTurnDuration;
     [SerializeField] private GameObject battleUIController;
@@ -37,6 +38,13 @@ public class BattleManager : MonoBehaviour
     public void EnemyTurnOver()
     {
         isEnemyTurnOver = true;
+    }
+
+    public void ZombieDied()
+    {
+        BattleOver();
+        enemyInstance = Instantiate(skeleton, new Vector2(Random.Range(-4.0f, -2.0f), Random.Range(1.0f, 2.0f)), Quaternion.identity);
+        InitBattle();
     }
 
     public void BattleOver()

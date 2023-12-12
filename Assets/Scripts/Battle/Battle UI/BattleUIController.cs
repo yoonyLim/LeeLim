@@ -16,6 +16,8 @@ public class BattleUIController : MonoBehaviour
 
     [SerializeField] private GameObject childAlert;
     [SerializeField] private TextMeshProUGUI battleTimer;
+    [SerializeField] private GameObject battleTimerBar;
+    private Slider battleTimerBarSlider;
     [SerializeField] private GameObject globalTurnDuration;
     [SerializeField] private Sprite swordEnabled;
     [SerializeField] private Sprite swordDisabled;
@@ -40,7 +42,11 @@ public class BattleUIController : MonoBehaviour
 
     public void BattleOver()
     {
+        StopAllCoroutines();
         isInBattle = false;
+        isTurnOver = false;
+        isTriggerOver = false;
+        isCoroutineCalled = false;
         group.alpha = 0;
         gameObject.SetActive(false);
         childAlert.SetActive(false);
@@ -50,6 +56,7 @@ public class BattleUIController : MonoBehaviour
         yield return new WaitUntil(() => isTurnOver);
         // reassign for next turn
         turnDuration = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
+        battleTimerBarSlider.maxValue = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
         isTurnOver = false;
         isCoroutineCalled = false;
     }
@@ -58,6 +65,8 @@ public class BattleUIController : MonoBehaviour
         childAlert.SetActive(false);
         childAlertCvsGrp = childAlert.GetComponent<CanvasGroup>();
         group = GetComponent<CanvasGroup>();
+        battleTimerBarSlider = battleTimerBar.GetComponent<Slider>();
+        battleTimerBarSlider.maxValue = globalTurnDuration.GetComponent<GlobalTurnDuration>().getTurnDuration();
         group.alpha = 0;
     }
     private void Update()
@@ -79,12 +88,14 @@ public class BattleUIController : MonoBehaviour
             if (turnDuration > 0)
             {
                 turnDuration -= Time.deltaTime;
+                battleTimerBarSlider.value = turnDuration;
                 int seconds = Mathf.FloorToInt(turnDuration % 60);
                 battleTimer.text = string.Format("{0}", seconds + 1);
             }
             else if (turnDuration <= 0)
             {
                 battleTimer.text = "0";
+                battleTimerBarSlider.value = 0;
 
                 if (!isCoroutineCalled)
                 {

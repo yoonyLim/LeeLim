@@ -12,6 +12,7 @@ TagManager:
   - Sword
   - Bow
   - Collision
+  - VirtualCamera
   layers:
   - Default
   - TransparentFX

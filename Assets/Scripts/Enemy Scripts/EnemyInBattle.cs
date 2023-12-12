@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -12,12 +13,16 @@ public class EnemyInBattle : MonoBehaviour
     private float strength = 4, delay = 0.2f;
     public bool isMyTurn = false;
     private Vector3 destinationCoords;
+    static public bool isZombieDead = false;
     [SerializeField] float speed;
 
     [SerializeField] private GameObject healthBar;
     [SerializeField] private GameObject enemySprite;
+    [SerializeField] private GameObject enemyBone;
+    [SerializeField] private float boneSpeed;
     private GameObject player;
     private GameObject battleManager;
+    private CinemachineVirtualCamera virtualCamera;
 
     public void TakeDamage(GameObject sender, float damage)
     {
@@ -48,14 +53,27 @@ public class EnemyInBattle : MonoBehaviour
     {
         isMyTurn = false;
         healthBar.SetActive(false);
+        virtualCamera.m_Lens.OrthographicSize = 2.5f;
         StartCoroutine(SlowDownDeath());
     }
 
     private IEnumerator SlowDownDeath()
     {
-        spriteAnim.Play("Zombie Dies");
-        yield return new WaitForSeconds(1);
-        battleManager.GetComponent<BattleManager>().BattleOver();
+        spriteAnim.Play("Die");
+        Time.timeScale = 0.5f;
+        yield return new WaitForSeconds(0.5f);
+        virtualCamera.m_Lens.OrthographicSize = 3.0f;
+        Time.timeScale = 1.0f;
+        if (!isZombieDead)
+        {
+            isZombieDead = true;
+            battleManager.GetComponent<BattleManager>().ZombieDied();
+        }
+        else
+        {
+            isZombieDead = false;
+            battleManager.GetComponent<BattleManager>().BattleOver();
+        }
         Destroy(gameObject);
     }
 
@@ -75,13 +93,24 @@ public class EnemyInBattle : MonoBehaviour
     {
         if (destinationCoords.x - transform.position.x < 0f)
         {
-            spriteAnim.Play("Zombie Run Left");
+            spriteAnim.Play("Run Left");
         }
         else
         {
-            spriteAnim.Play("Zombie Run Right");
+            spriteAnim.Play("Run Right");
         }
         transform.position = Vector3.MoveTowards(transform.position, destinationCoords, speed * Time.deltaTime);
+    }
+
+    private void ThrowBone()
+    {
+        Vector3 rotation = destinationCoords - transform.position;
+        float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+
+        GameObject boneInstance = Instantiate(enemyBone, transform.position, Quaternion.identity);
+        boneInstance.transform.rotation = Quaternion.Euler(0, 0, rotZ);
+        Vector2 direction = new Vector2(rotation.x, rotation.y).normalized;
+        boneInstance.GetComponent<Rigidbody2D>().velocity = direction * boneSpeed;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -101,6 +130,7 @@ public class EnemyInBattle : MonoBehaviour
         spriteAnim = enemySprite.GetComponent<Animator>();
         battleManager = GameObject.FindGameObjectWithTag("BattleManager");
         player = GameObject.FindGameObjectWithTag("Player");
+        virtualCamera = GameObject.FindGameObjectWithTag("VirtualCamera").GetComponent<CinemachineVirtualCamera>();
     }
 
     // Update is called once per frame
@@ -108,7 +138,15 @@ public class EnemyInBattle : MonoBehaviour
     {
         if (isMyTurn)
         {
-            Dash();
+            if (!isZombieDead)
+            {
+                Dash();
+            }
+            else
+            {
+                ThrowBone();
+                EndTurn();
+            }
             
             if (transform.position == destinationCoords)
             {

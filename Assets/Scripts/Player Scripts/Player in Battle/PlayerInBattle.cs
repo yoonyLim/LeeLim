@@ -1,5 +1,7 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +31,7 @@ public class PlayerInBattle : MonoBehaviour
     [SerializeField] private TextMeshProUGUI healthPotionNum;
     [SerializeField] private GameObject healthPotionMenu;
     [SerializeField] private Sprite healthPotionEmpty;
+    [SerializeField] private CinemachineVirtualCamera virtualCamera;
 
     public void InitBattle()
     {
@@ -78,7 +81,8 @@ public class PlayerInBattle : MonoBehaviour
         
         if (health <= 0)
         {
-            Debug.Log("player dead");
+            StartCoroutine(SlowDeath());
+            EndTurn();
         }
 
         anim.Play("Player Got Hit");
@@ -86,6 +90,18 @@ public class PlayerInBattle : MonoBehaviour
         rb.AddForce(direction * strength, ForceMode2D.Impulse);
         StartCoroutine(KnockBacked());
         EndTurn();
+    }
+
+    private IEnumerator SlowDeath()
+    {
+        anim.Play("Dead");
+        Time.timeScale = 0.5f;
+        yield return new WaitForSeconds(0.5f);
+        virtualCamera.m_Lens.OrthographicSize = 3.0f;
+        Time.timeScale = 1.0f;
+        battleManager.GetComponent<BattleManager>().BattleOver();
+        Destroy(gameObject);
+        Application.Quit();
     }
 
     private IEnumerator KnockBacked()
